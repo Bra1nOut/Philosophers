@@ -6,7 +6,7 @@
 /*   By: levincen <levincen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 14:06:18 by levincen          #+#    #+#             */
-/*   Updated: 2025/07/02 16:30:42 by levincen         ###   ########.fr       */
+/*   Updated: 2025/07/03 16:26:47 by levincen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ int	init_philo(t_rules *rules)
 		rules->philo[i].meal_eated = 0;
 		rules->philo[i].is_dead = false;
 		rules->philo[i].rules = rules;
+		pthread_create(&rules->philo[i].thread, NULL, test, &rules->philo[i]);
 		i++;
 	}
 	return (0);
@@ -64,7 +65,10 @@ int	init_all(t_rules *rules, int argc, char **argv)
 	if (argc == 6)
 		rules->eat_count = ft_atoi(argv[5]);
 	if (rules->time_to_die < 0 || rules->time_to_eat < 0 || rules->time_to_sleep < 0 || rules->eat_count < 0)
+	{
+		rules->is_running = false;
 		return (printf("Error : Make sure every parameters are above 0 and are nums\n"));
+	}
 	rules->start_time = get_time();
 	if (rules->nb_philo < 1)
 		return (printf("At least 1 philosopher is needed\n"));
@@ -73,9 +77,24 @@ int	init_all(t_rules *rules, int argc, char **argv)
 	return (0);
 }
 
+void	*test(void *ptr)
+{
+	t_philo *philo;
+
+	philo = (t_philo *)ptr;
+	sleeping(philo);
+	thinking(philo);
+	eating(philo);
+	printf("HERE at : %lld\n", timestamp(philo->rules->start_time));
+	return (NULL);
+}
+
 int main(int argc, char **argv)
 {
 	t_rules	rules;
+
+	memset(&rules, 0, sizeof(t_rules));
+	rules.is_running = true;
 	init_all(&rules, argc, argv);
 	printf("nb_philo : %i\n", rules.nb_philo);
 	printf("time_to_die : %i\n", rules.time_to_die);
@@ -86,7 +105,7 @@ int main(int argc, char **argv)
 	printf("\n");
 	printf("/////////////////////////////////////\n");
 	printf("\n");
-	
+
 	// int i = 0;
 	// int num = ((i + 1) % rules.nb_philo);
 	// while(i < rules.nb_philo)
@@ -99,6 +118,6 @@ int main(int argc, char **argv)
 	// 	i++;
 	// 	num = ((i + 1) % rules.nb_philo);
 	// }
-	free_mutexes(&rules);
+	shutdown_all(&rules);
 	return (0);
 }

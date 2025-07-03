@@ -12,6 +12,7 @@ PURPLE = \033[0;35m
 PINK = \033[38;5;205m
 SRCS =	utils.c\
 		free.c\
+		routines.c\
 		main.c
 
 SRCS_BONUS = \
