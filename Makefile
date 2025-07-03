@@ -10,6 +10,7 @@ BLUE = \033[38;5;153m
 NC = \033[0m
 PURPLE = \033[0;35m
 PINK = \033[38;5;205m
+
 SRCS =	utils.c\
 		free.c\
 		routines.c\
@@ -18,27 +19,43 @@ SRCS =	utils.c\
 SRCS_BONUS = \
 
 OBJS = $(SRCS:.c=.o)
-
 OBJS_BONUS = $(SRCS_BONUS:.c=.o)
-
 TARGET = $(NAME)
 
-$(NAME): $(OBJS)
+.PHONY: all clean fclean re bonus compile_with_progress
+
+compile_with_progress:
 	@echo "$(PURPLE)\e[1m┌─────$(NAME)──────────────────────────────────────┐\e"
 	@echo "││$(NC)\e[1m		Compiling $(NAME) ⏳		 $(PURPLE)│"
 	@echo "\e[1m└────────────────────────────────────────────────┘\e"
+	@echo ""
+
+	@total=$(words $(SRCS)); \
+	count=0; \
+	bar_width=30; \
+	for src in $(SRCS); do \
+		count=$$((count + 1)); \
+		obj=$$(echo $$src | sed 's/\.c$$/.o/'); \
+		$(CC) $(FLAGS) -c -o $$obj $$src $(INCLUDES); \
+		percent=$$(( 100 * count / total )); \
+		done=$$(( (bar_width * count) / total )); \
+		todo=$$(( bar_width - done )); \
+		done_bar=$$(printf "%0.s#" $$(seq 1 $$done)); \
+		todo_bar=$$(printf "%0.s-" $$(seq 1 $$todo)); \
+		color=$$([ $$percent -eq 100 ] && echo "$(PURPLE)" || echo "$(RED)"); \
+		printf "\r%s[%s%s] %3d%%$(NC)\033[K" "$$color" "$$done_bar" "$$todo_bar" "$$percent"; \
+		done; \
+		printf "\n"
+		@echo ""
+
 	@$(CC) $(FLAGS) -o $(NAME) $(OBJS) $(INCLUDES)
+
 	@echo "$(PURPLE)\e[1m┌─────$(NAME)──────────────────────────────────────┐\e"
 	@echo "││$(BLUE)		\e[1mCompilation finished ✅\e		 $(PURPLE) │"
 	@echo "\e[1m└────────────────────────────────────────────────┘\e"
 
-.c.o:
-	@if [ "$(TARGET)" = "$(NAME)" ] && [ ! -f .mandatory ]; then \
-		touch .mandatory; \
-	fi
-	@cc $(FLAGS) -c -o $@ $<
 
-all: $(NAME)
+all: compile_with_progress
 
 clean:
 	@$(RM) $(OBJS) $(OBJS_BONUS)
@@ -56,5 +73,3 @@ bonus: clean $(OBJS_BONUS)
 	@echo "$(PURPLE)\e[1m┌─────$(NAME_BONUS)──────────────────────────────┐\e"
 	@echo "││$(BLUE)	      \e[1mCompilation finished ✅\e		 $(PURPLE) │"
 	@echo "\e[1m└────────────────────────────────────────────────┘\e"
-
-.PHONY: all clean fclean re bonus
