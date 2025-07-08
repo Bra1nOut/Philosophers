@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: levincen <levincen@student.42.fr>          +#+  +:+       +#+        */
+/*   By: bra1nout <bra1nout@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 14:10:00 by levincen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:18:40 by levincen         ###   ########.fr       */
+/*   Updated: 2025/07/05 17:46:11 by bra1nout         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,19 +29,23 @@ typedef struct s_philo
 	long			last_meal;
 	pthread_mutex_t	last_meal_mtx;
 	int				meal_eated;
+	pthread_mutex_t	meal_eated_mtx;
 	pthread_t		thread;
 	struct s_rules	*rules;
-	bool			is_dead;
+
 }					t_philo;
 
 typedef struct s_rules
 {
+	bool			is_dead;
+	pthread_mutex_t	is_dead_mtx;
 	bool			is_running;
 	int				nb_philo;
 	int				time_to_eat;
 	int				time_to_sleep;
 	int				time_to_die;
 	int				eat_count;
+	pthread_mutex_t	eat_count_mtx;
 	long long		start_time;
 	pthread_mutex_t	start_time_mtx;
 	pthread_mutex_t	*forks;
@@ -64,6 +68,12 @@ void				free_thread(t_rules *rules);
 void				sleeping(t_philo *philo);
 void				thinking(t_philo *philo);
 void				eating(t_philo *philo);
+
+// Init
+int		init_mutexes(t_rules *rules);
+void	init_philo(t_rules *rules, pthread_t monitoring_t);
+int		init_all(t_rules *rules, pthread_t	monitoring, int argc, char **argv);
+void	*monitoring(void *arg);
 
 // A SUPPR
 void	*test(void *ptr);

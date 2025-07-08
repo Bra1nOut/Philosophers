@@ -14,6 +14,8 @@ PINK = \033[38;5;205m
 SRCS =	utils.c\
 		free.c\
 		routines.c\
+		init.c\
+		death.c\
 		main.c
 
 SRCS_BONUS = \

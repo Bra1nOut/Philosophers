@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   routines.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: levincen <levincen@student.42.fr>          +#+  +:+       +#+        */
+/*   By: bra1nout <bra1nout@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 15:09:10 by levincen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:20:01 by levincen         ###   ########.fr       */
+/*   Updated: 2025/07/04 19:50:35 by bra1nout         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,4 +33,28 @@ void	eating(t_philo *philo)
 	pthread_mutex_lock(&philo->last_meal_mtx);
 	philo->last_meal = get_time();
 	pthread_mutex_unlock(&philo->last_meal_mtx);
+}
+
+void	eat_priority(t_philo *philo, int i)
+{
+	if (i % 2 == 0)
+	{
+		pthread_mutex_lock(&philo->left_fork);
+		pthread_mutex_lock(&philo->right_fork);
+	}
+	else
+	{
+		pthread_mutex_lock(&philo->right_fork);
+		pthread_mutex_lock(&philo->left_fork);
+	}
+	if (i % 2 == 0)
+	{
+		pthread_mutex_unlock(&philo->right_fork);
+		pthread_mutex_unlock(&philo->left_fork);
+	}
+	else
+	{
+		pthread_mutex_unlock(&philo->left_fork);
+		pthread_mutex_unlock(&philo->right_fork);
+	}
 }
