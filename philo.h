@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bra1nout <bra1nout@student.42.fr>          +#+  +:+       +#+        */
+/*   By: levincen <levincen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 14:10:00 by levincen          #+#    #+#             */
-/*   Updated: 2025/07/05 17:46:11 by bra1nout         ###   ########.fr       */
+/*   Updated: 2025/07/08 12:34:05 by levincen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ int					ft_atoi(const char *str);
 long				get_time(void);
 long long 			timestamp(long long start_time);
 void				print_action(char *str, t_philo *philo);
+void				smart_sleep(int duration, t_philo *philo);
 
 // Free
 void				free_mutexes(t_rules *rules);
@@ -68,12 +69,17 @@ void				free_thread(t_rules *rules);
 void				sleeping(t_philo *philo);
 void				thinking(t_philo *philo);
 void				eating(t_philo *philo);
+void				routine_no_meal(t_philo *philo);
+void				*routine_choose(void *ptr);
+void				one_philo(t_rules *rules);
+void				eat_priority(t_philo *philo, int i);
 
 // Init
-int		init_mutexes(t_rules *rules);
-void	init_philo(t_rules *rules, pthread_t monitoring_t);
-int		init_all(t_rules *rules, pthread_t	monitoring, int argc, char **argv);
-void	*monitoring(void *arg);
+int					init_mutexes(t_rules *rules);
+void				init_philo(t_rules *rules, pthread_t *monitoring_t);
+int					init_all(t_rules *rules, pthread_t	*monitoring, int argc, char **argv);
+void				*monitoring(void *arg);
+bool				death_check(t_philo *philo);
 
 // A SUPPR
 void	*test(void *ptr);

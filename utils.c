@@ -6,14 +6,34 @@
 /*   By: levincen <levincen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 12:16:21 by levincen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:18:31 by levincen         ###   ########.fr       */
+/*   Updated: 2025/07/08 12:39:21 by levincen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
+void	smart_sleep(int duration, t_philo *philo)
+{
+	long	start;
+
+	start = get_time();
+	while (get_time() - start < duration)
+	{
+		if (death_check(philo))
+			break ;
+		usleep(1000);
+	}
+}
+
 void	print_action(char *str, t_philo *philo)
 {
+	pthread_mutex_lock(&philo->rules->is_dead_mtx);
+	if (philo->rules->is_dead)
+	{
+		pthread_mutex_unlock(&philo->rules->is_dead_mtx);
+		return ;
+	}
+	pthread_mutex_unlock(&philo->rules->is_dead_mtx);
 	pthread_mutex_lock(&philo->rules->start_time_mtx);
 	printf("%lld %i %s\n", timestamp(philo->rules->start_time), philo->id, str);
 	pthread_mutex_unlock(&philo->rules->start_time_mtx);

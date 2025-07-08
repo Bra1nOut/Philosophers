@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bra1nout <bra1nout@student.42.fr>          +#+  +:+       +#+        */
+/*   By: levincen <levincen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/05 17:38:29 by bra1nout          #+#    #+#             */
-/*   Updated: 2025/07/05 17:38:57 by bra1nout         ###   ########.fr       */
+/*   Updated: 2025/07/08 12:26:49 by levincen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,29 +32,35 @@ int	init_mutexes(t_rules *rules)
 	return (0);
 }
 
-void	init_philo(t_rules *rules, pthread_t monitoring_t)
+void	init_philo(t_rules *rules, pthread_t *monitoring_t)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	rules->philo = malloc(sizeof(t_philo) * rules->nb_philo);
+	if (!rules->philo)
+		return ;
 	while (i < rules->nb_philo)
 	{
 		rules->philo[i].id = i;
+		rules->philo[i].rules = rules;
 		rules->philo[i].left_fork = rules->forks[i];
 		rules->philo[i].right_fork = rules->forks[(i + 1) % rules->nb_philo];
-		rules->philo[i].last_meal = rules->start_time;
+		rules->philo[i].last_meal = get_time();
 		rules->philo[i].meal_eated = 0;
-		rules->philo[i].rules = rules;
-		if (pthread_create(&rules->philo[i].thread, NULL, test, &rules->philo[i]) != 0)
+		pthread_mutex_init(&rules->philo[i].last_meal_mtx, NULL);
+		pthread_mutex_init(&rules->philo[i].meal_eated_mtx, NULL);
+		if (pthread_create(&rules->philo[i].thread, NULL,
+				routine_choose, &rules->philo[i]) != 0)
 			return ;
 		i++;
 	}
-	if (pthread_create(&monitoring_t, NULL, monitoring, rules) != 0)
+	if (pthread_create(monitoring_t, NULL, monitoring, rules) != 0)
 		return ;
 }
 
-int	init_all(t_rules *rules, pthread_t	monitoring, int argc, char **argv)
+
+int	init_all(t_rules *rules, pthread_t	*monitoring, int argc, char **argv)
 {
 	if (argc < 5 || argc > 6)
 		return (printf("Usage : ./philo nb_philo time_to_die time_to_eat time_to_sleep (eat_count)\n"));
@@ -63,6 +69,9 @@ int	init_all(t_rules *rules, pthread_t	monitoring, int argc, char **argv)
 	rules->time_to_eat = ft_atoi(argv[3]);
 	rules->time_to_sleep = ft_atoi(argv[4]);
 	rules->is_dead = false;
+	pthread_mutex_init(&rules->eat_count_mtx, NULL);
+	pthread_mutex_init(&rules->is_dead_mtx, NULL);
+	pthread_mutex_init(&rules->start_time_mtx, NULL);
 	if (argc == 6)
 		rules->eat_count = ft_atoi(argv[5]);
 	if (rules->time_to_die < 0 || rules->time_to_eat < 0 || rules->time_to_sleep < 0 || rules->eat_count < 0)
@@ -70,10 +79,17 @@ int	init_all(t_rules *rules, pthread_t	monitoring, int argc, char **argv)
 		rules->is_running = false;
 		return (printf("Error : Make sure every parameters are above 0 and are nums\n"));
 	}
-	rules->start_time = get_time();
 	if (rules->nb_philo < 1)
 		return (printf("At least 1 philosopher is needed\n"));
+	if (rules->nb_philo == 1)
+	{
+		one_philo(rules);
+		return (0);
+	}
 	init_mutexes(rules);
 	init_philo(rules, monitoring);
+	pthread_mutex_lock(&rules->start_time_mtx);
+	rules->start_time = get_time();
+	pthread_mutex_unlock(&rules->start_time_mtx);
 	return (0);
 }

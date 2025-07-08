@@ -1,7 +1,7 @@
 NAME = philo
 NAME_BONUS = philo_bonus
 CC = cc
-FLAGS = -Wall -Werror -Wextra -g3 -fsanitize=address
+FLAGS = -Wall -Werror -Wextra -g3 -fsanitize=thread
 RM = rm -rf
 INCLUDES = -I./includes -I./libft
 GREEN = \033[0;32m
@@ -13,6 +13,7 @@ PINK = \033[38;5;205m
 
 SRCS =	utils.c\
 		free.c\
+		routines_actions.c\
 		routines.c\
 		init.c\
 		death.c\
